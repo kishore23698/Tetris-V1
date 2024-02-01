@@ -3,7 +3,7 @@ terraform {
     bucket                  = "kishore-s3-bucket-statefilestore"
     key                     = "EKS/terraform.tfstate"
     region                  = "ap-south-1"
-    #shared_credentials_files = ["$HOME/.aws/credentials"]
+    
     }
 
   required_providers {
