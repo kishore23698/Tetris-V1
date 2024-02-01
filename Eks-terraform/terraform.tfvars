@@ -1,5 +1,5 @@
 rolename = "eks-cluster-demo-role1"
-region = "us-west-1"
+region = "ap-southeast-1"
 cluster_name = "my-eks-cluster1"
 kubernetes_version = 1.25
  
@@ -14,11 +14,11 @@ disk_size = 20
 cidr_block_igw = "0.0.0.0/0"
 cidr_block = "10.0.0.0/16"
 sub-a_cidr_block = "10.0.1.0/24"
-subnet_az1 = "us-west-1a"  
+subnet_az1 = "ap-southeast-1a"  
 sub-b_cidr_block = "10.0.2.0/24"
-subnet_az2 = "us-west-1b" 
+subnet_az2 = "ap-southeast-1b" 
 sub-c_cidr_block = "10.0.3.0/24"
-subnet_az3 = "us-west-1c" 
+subnet_az3 = "ap-southeast-1c" 
 
 
 sg = "sg1"
