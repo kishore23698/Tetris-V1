@@ -1,11 +1,11 @@
-rolename = "eks-cluster-demo-role1"
+rolename = "indium_eks-cluster-demo-role"
 region = "ap-southeast-1"
-cluster_name = "my-eks-cluster1"
+cluster_name = "indium_my-eks-cluster1"
 kubernetes_version = 1.25
  
  
-node_role_name = "eks_node_role1"
-node_group_name = "my-node-group1"
+node_role_name = "indium_eks_node_role"
+node_group_name = "indium_my-node-group1"
 instance_types = ["t2.medium"]
 ami_type = "AL2_x86_64"
 capacity_type = "ON_DEMAND"
@@ -21,4 +21,4 @@ sub-c_cidr_block = "10.0.3.0/24"
 subnet_az3 = "ap-southeast-1c" 
 
 
-sg = "sg1"
+sg = "indium_sg1"
