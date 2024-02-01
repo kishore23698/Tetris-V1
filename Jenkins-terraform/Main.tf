@@ -1,5 +1,5 @@
-resource "aws_iam_role" "example_role" {
-  name = "Jenkins-terraform"
+resource "aws_iam_role" "kishore_ec2_role" {
+  name = "Jenkins-terraform1"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -16,16 +16,15 @@ resource "aws_iam_role" "example_role" {
 EOF
 }
 
-resource "aws_iam_role_policy_attachment" "example_attachment" {
-  role       = aws_iam_role.example_role.name
+resource "aws_iam_role_policy_attachment" "kishore_policy_attach" {
+  role       = aws_iam_role.kishore_ec2_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
-resource "aws_iam_instance_profile" "example_profile" {
-  name = "Jenkins-terraform"
-  role = aws_iam_role.example_role.name
+resource "aws_iam_instance_profile" "kishore_ec2_profile" {
+  name = "Jenkins-terraform1"
+  role = aws_iam_role.kishore_ec2_role.name
 }
-
 
 resource "aws_security_group" "Jenkins-sg" {
   name        = "Jenkins-Security Group"
@@ -58,13 +57,13 @@ resource "aws_security_group" "Jenkins-sg" {
   }
 }
 
-resource "aws_instance" "web" {
-  ami                    = "ami-0df4b2961410d4cff"
-  instance_type          = "t2.medium"
-  key_name               = "purplehaze"
+resource "aws_instance" "kishorejenkins_ec2" {
+  ami                    = "ami-0a7cf821b91bcccbc"
+  instance_type          = "t2.large"
+  key_name               = "trivy"
   vpc_security_group_ids = [aws_security_group.Jenkins-sg.id]
   user_data              = templatefile("./install_jenkins.sh", {})
-  iam_instance_profile   = aws_iam_instance_profile.example_profile.name
+  iam_instance_profile   = aws_iam_instance_profile.kishore_ec2_profile.name
 
   tags = {
     Name = "Jenkins-argo"
@@ -73,4 +72,10 @@ resource "aws_instance" "web" {
   root_block_device {
     volume_size = 30
   }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.kishore_policy_attach,
+    aws_iam_instance_profile.kishore_ec2_profile,
+    aws_security_group.Jenkins-sg,
+  ]
 }
