@@ -1,5 +1,5 @@
 resource "aws_iam_role" "kishore_ec2_role" {
-  name = "Jenkins-terraform1"
+  name = "Jenkins-terraform"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -22,12 +22,12 @@ resource "aws_iam_role_policy_attachment" "kishore_policy_attach" {
 }
 
 resource "aws_iam_instance_profile" "kishore_ec2_profile" {
-  name = "Jenkins-terraform1"
+  name = "Jenkins-terraform"
   role = aws_iam_role.kishore_ec2_role.name
 }
 
-resource "aws_security_group" "Jenkins-sg" {
-  name        = "Jenkins-Security Group"
+resource "aws_security_group" "Jenkins-Security" {
+  name        = "Jenkins-Security"
   description = "Open 22,443,80,8080,9000"
 
   # Define a single ingress rule to allow traffic on all specified ports
@@ -61,7 +61,7 @@ resource "aws_instance" "kishorejenkins_ec2" {
   ami                    = "ami-0a7cf821b91bcccbc"
   instance_type          = "t2.large"
   key_name               = "trivy"
-  vpc_security_group_ids = [aws_security_group.Jenkins-sg.id]
+  vpc_security_group_ids = [aws_security_group.Jenkins-Security.id]
   user_data              = templatefile("./install_jenkins.sh", {})
   iam_instance_profile   = aws_iam_instance_profile.kishore_ec2_profile.name
 
@@ -76,6 +76,6 @@ resource "aws_instance" "kishorejenkins_ec2" {
   depends_on = [
     aws_iam_role_policy_attachment.kishore_policy_attach,
     aws_iam_instance_profile.kishore_ec2_profile,
-    aws_security_group.Jenkins-sg,
+    aws_security_group.Jenkins-Security,
   ]
 }
