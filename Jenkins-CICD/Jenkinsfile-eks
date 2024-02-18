@@ -1,0 +1,56 @@
+pipeline{
+    agent any
+    stages {
+        stage('Checkout from Git'){
+            steps{
+                git branch: 'main', credentialsId: 'github-cred', url: 'https://github.com/kishore23698/Tetris-V1.git'
+            }
+        }
+        stage('Terraform version'){
+             steps{
+                 sh 'terraform --version'
+             }
+        }
+        stage('Terraform init'){
+             steps{
+                script {
+                    withCredentials([aws(credentialsId: 'aws-cred', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                         dir('Eks-terraform') {
+                        sh 'terraform init'
+                        }
+                    }
+                }     
+             }
+        }
+        stage('Terraform validate'){
+             steps{
+                 dir('Eks-terraform') {
+                      sh 'terraform validate'
+                   }      
+             }
+        }
+        stage('Terraform plan'){
+             steps{
+                 script {
+                    withCredentials([aws(credentialsId: 'aws-cred', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                         dir('Eks-terraform') {
+                        sh 'terraform plan'
+                        }
+                    }
+                } 
+                      
+             }
+        }
+        stage('Terraform apply/destroy'){
+             steps{
+                 script {
+                    withCredentials([aws(credentialsId: 'aws-cred', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                         dir('Eks-terraform') {
+                        sh 'terraform ${action} --auto-approve'
+                        }
+                    }
+                } 
+             }
+        }
+    }
+}

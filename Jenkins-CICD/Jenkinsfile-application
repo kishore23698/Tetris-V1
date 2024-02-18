@@ -1,0 +1,93 @@
+pipeline{
+    agent any
+    tools{
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment {
+        SCANNER_HOME=tool 'sonar-scanner'
+    }
+    stages {
+        stage('clean workspace'){
+            steps{
+                cleanWs()
+            }
+        }
+        stage('Checkout from Git'){
+            steps{
+                git branch: 'main', credentialsId: 'github-cred', url: 'https://github.com/kishore23698/Tetris-V1.git'
+            }
+        }
+        stage("Sonarqube Analysis "){
+            steps{
+                    withSonarQubeEnv('sonar-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=TetrisVersion${dir} \
+                    -Dsonar.projectKey=TetrisVersion${dir} -Dsonar.sources=./${dir} '''
+                }
+                
+            }
+        }
+        stage("quality gate"){
+           steps {
+                script {
+                        waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                }
+            } 
+        }
+        stage('Install Dependencies') {
+            steps {
+		dir('${dir}') {
+                        sh "npm install"
+                        }
+                
+            }
+        }
+        stage('OWASP FS SCAN') {
+            steps {
+                 dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+        stage('TRIVY FS SCAN') {
+            steps {
+		dir('${dir}') {
+                        sh "trivy fs . > trivyfs.txt"
+                        }
+                
+            }
+        }
+        stage("Docker Build & Push"){
+            steps{
+                script{
+                   withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){  
+                        sh "docker build -t tetris${dir} ./${dir}"
+			sh "docker tag tetris${dir} kishore23698/tetris${dir}:latest "
+			sh "docker push kishore23698/tetris${dir}:latest "
+                       
+                    }
+                }
+            }
+        }
+        stage("TRIVY"){
+            steps{
+		dir('${dir}') {
+                        sh "trivy image kishore23698/tetris${dir}:latest > trivyimage${dir}.txt" 
+                        }
+                
+            }
+        }
+        stage('Update Deployment File') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'git-pat', variable: 'GIT_TOKEN')]) {
+                       NEW_IMAGE_NAME = "kishore23698/tetris${dir}:latest"   
+                       sh "sed -i 's|image: .*|image: $NEW_IMAGE_NAME|' ./Tetris-manifest/deployment.yml"
+                       sh 'git add ./Tetris-manifest/deployment.yml || true'
+                       sh "git commit -m 'Update deployment image to $NEW_IMAGE_NAME'|| true"
+                       sh "git config --global user.name 'kishore23698' && git push https://${GIT_TOKEN}@github.com/kishore23698/Tetris-V1.git HEAD:main"
+                    }
+                }
+            }
+        }
+    }
+}
